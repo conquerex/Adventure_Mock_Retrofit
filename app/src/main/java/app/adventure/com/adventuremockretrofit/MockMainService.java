@@ -14,7 +14,11 @@ import retrofit2.mock.NetworkBehavior;
 
 public class MockMainService extends RetrofitBuildService {
 
-    public Call<MainResponse> getMockTextLength(String text) {
+    public static MockMainService newInstance() {
+        return new MockMainService();
+    }
+
+    public Call<MainResponse> getMockTextLength(String text, MockMainListener listener) {
 
         Retrofit retrofit = createRetrofit();
 
@@ -31,12 +35,15 @@ public class MockMainService extends RetrofitBuildService {
         Callback<MainResponse> callback = new Callback<MainResponse>() {
             @Override
             public void onResponse(Call<MainResponse> call, Response<MainResponse> response) {
-                //
+                if (response == null) {
+                    return;
+                }
+                listener.onSuccess(response.body().length);
             }
 
             @Override
             public void onFailure(Call<MainResponse> call, Throwable t) {
-                //
+                listener.onFail();
             }
         };
         call.enqueue(callback);
@@ -54,7 +61,7 @@ public class MockMainService extends RetrofitBuildService {
         public Call<MainResponse> getMockLength(String text) {
             MainResponse response = new MainResponse();
 
-            response.length = 0;
+            response.length = text.length();
 
             return delegate.returningResponse(response).getLength(text);
         }
